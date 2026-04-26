@@ -22,7 +22,11 @@
 
 ## 준비
 
-외부 Python 패키지는 현재 MVP에는 필요하지 않습니다. `requirements.txt`는 Render 빌드 호환을 위해 비워두었습니다.
+외부 Python 패키지는 현재 MVP에는 필요하지 않습니다. 기존 구인글 드라이런 스크립트를 계속 쓰려면 `requirements.txt`의 Playwright를 설치하세요.
+
+```bash
+python3 -m pip install -r requirements.txt
+```
 
 로컬 환경변수를 설정합니다.
 
@@ -125,8 +129,8 @@ http://127.0.0.1:8000
 이 프로젝트는 Render Web Service로 배포할 수 있습니다. `render.yaml`은 아래 구성을 기준으로 준비되어 있습니다.
 
 - Python Web Service
-- 인스턴스 타입: Free
-- 무료 배포용 SQLite DB: `/tmp/gongsil.sqlite3`
+- 영구 디스크: `/var/data`
+- SQLite DB: `/var/data/gongsil.sqlite3`
 - 시작 명령: `python3 scripts/run_dashboard.py`
 - 외부 접속 보호: `DASHBOARD_USER`, `DASHBOARD_PASSWORD`
 
@@ -134,7 +138,7 @@ Render에서 배포할 때 필요한 환경변수:
 
 ```text
 HOST=0.0.0.0
-GONGSIL_DB=/tmp/gongsil.sqlite3
+GONGSIL_DB=/var/data/gongsil.sqlite3
 GONGSIL_ID=your_gongsil_id
 GONGSIL_PASSWORD=your_gongsil_password
 DASHBOARD_USER=admin
@@ -157,8 +161,6 @@ python3 scripts/collect_officetels.py --max-pages 1
 ```
 
 주의: Render에 외부 URL이 생기므로 `DASHBOARD_PASSWORD`는 반드시 설정하세요. 설정하지 않으면 URL을 아는 사람이 화면을 볼 수 있습니다.
-
-무료 플랜에서 `/tmp/gongsil.sqlite3`를 쓰면 재배포/재시작 때 DB가 초기화될 수 있습니다. 나중에 데이터 보존이 필요하면 Render Disk가 지원되는 플랜으로 바꾸거나 PostgreSQL/Supabase로 옮기면 됩니다.
 
 ## 데이터베이스
 

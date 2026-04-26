@@ -2,14 +2,14 @@ services:
   - type: web
     name: gongsil-dashboard
     runtime: python
-    plan: free
+    plan: starter
     buildCommand: python3 -m pip install --upgrade pip
     startCommand: python3 scripts/run_dashboard.py
     envVars:
       - key: HOST
         value: 0.0.0.0
       - key: GONGSIL_DB
-        value: /tmp/gongsil.sqlite3
+        value: /var/data/gongsil.sqlite3
       - key: GONGSIL_COLLECTION_DISTRICTS
         value: 강남구
       - key: GONGSIL_ID
@@ -26,3 +26,7 @@ services:
         sync: false
       - key: TELEGRAM_CHAT_ID
         sync: false
+    disk:
+      name: gongsil-data
+      mountPath: /var/data
+      sizeGB: 1
