@@ -1,0 +1,19 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local secrets and production data
+.env
+data/
+*.sqlite3
+*.db
+
+# Generated local artifacts
+artifacts/
+
+# Browser/test caches
+.pytest_cache/
+playwright-report/
+test-results/
