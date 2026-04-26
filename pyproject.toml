@@ -1,0 +1,6 @@
+[project]
+name = "gongsil-dashboard"
+version = "0.1.0"
+description = "Private Gongsil officetel listing dashboard"
+requires-python = ">=3.12,<3.13"
+dependencies = []
