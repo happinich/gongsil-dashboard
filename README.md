@@ -22,11 +22,7 @@
 
 ## 준비
 
-외부 Python 패키지는 현재 MVP에는 필요하지 않습니다. 기존 구인글 드라이런 스크립트를 계속 쓰려면 `requirements.txt`의 Playwright를 설치하세요.
-
-```bash
-python3 -m pip install -r requirements.txt
-```
+외부 Python 패키지는 현재 MVP에는 필요하지 않습니다. `requirements.txt`는 Render 빌드 호환을 위해 비워두었습니다.
 
 로컬 환경변수를 설정합니다.
 
