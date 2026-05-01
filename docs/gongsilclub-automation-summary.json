@@ -1,0 +1,164 @@
+{
+  "site": {
+    "name": "공실클럽 네이버 부동산 매물관리센터",
+    "base_url": "https://land.gongsilclub.com/mmc/",
+    "login_required": true,
+    "automation_feasibility": "possible_with_playwright",
+    "notes": [
+      "로그인 후 등록리스트, 종료리스트, 매물등록, 재등록, 전송 단계 접근 가능",
+      "홍보확인서 V1 이미지 생성은 iframe 팝업 내부 canvas와 미리보기 저장 단계를 거쳐 첨부됨",
+      "최종 전송 시 결제 팝업에서 G포인트 또는 쿠폰 선택 가능",
+      "2026-05-01 확인 기준 G포인트 선택이 가능했고 정상 차감 처리됨"
+    ]
+  },
+  "account": {
+    "user_id": "prugiogold",
+    "password_stored": false,
+    "reason_password_omitted": "민감정보라 자동화 요약 파일에는 저장하지 않음"
+  },
+  "environment": {
+    "workspace": "c:\\Users\\happinich\\Documents\\9.vibecoding\\navergong",
+    "automation_tool": "Playwright",
+    "runtime": "Node.js",
+    "timezone": "Asia/Seoul",
+    "summary_created_date": "2026-05-01"
+  },
+  "target_listing": {
+    "local_listing_id": "4829425",
+    "naver_listing_id_after_transfer": "2623805266",
+    "property_name": "강남헤븐리치더써밋761",
+    "unit": "1동 914호",
+    "floor": "9층",
+    "address_area": "서울특별시 강남구 역삼동",
+    "property_type": "오피스텔",
+    "deal_type": "월세",
+    "price": {
+      "deposit_manwon": 1000,
+      "monthly_rent_manwon": 100
+    },
+    "area_sqm": {
+      "contract": 33.48,
+      "exclusive": 14.77
+    }
+  },
+  "completed_actions": [
+    {
+      "step": "login",
+      "status": "completed",
+      "details": "수정된 ID prugiogold로 로그인 성공"
+    },
+    {
+      "step": "inspect_registration_list",
+      "status": "completed",
+      "details": "등록리스트에서 강남헤븐리치더써밋761 1동 914호 매물 확인"
+    },
+    {
+      "step": "prepare_listing_transfer",
+      "status": "completed",
+      "details": "등록리스트의 914호 매물 전송/상세 단계 진입"
+    },
+    {
+      "step": "select_verification_method",
+      "status": "completed",
+      "details": "검증방식 홍보확인(V1) 선택"
+    },
+    {
+      "step": "fill_owner_information",
+      "status": "completed",
+      "details": "등기부상 소유자명 손지연 입력, 소유자와의 관계 본인 선택"
+    },
+    {
+      "step": "generate_image_confirmation",
+      "status": "completed",
+      "details": "이미지 홍보확인서 생성, 손지연 서명 삽입, 미리보기 확인"
+    },
+    {
+      "step": "attach_image_confirmation",
+      "status": "completed",
+      "details": "이미지 홍보확인서 저장 후 confirmdocUrl 첨부값 생성 확인"
+    },
+    {
+      "step": "final_transfer",
+      "status": "completed",
+      "details": "필수 동의 후 G포인트 차감 방식으로 최종 전송 완료"
+    }
+  ],
+  "verification_method": {
+    "selected": "홍보확인(V1)",
+    "owner_name": "손지연",
+    "owner_relation": "본인",
+    "confirmation_image_url_observed": "http://land.gongsilclub.com/files/memulAdConfirm/4829/4829425/4829425.png",
+    "confirmation_preview_text": [
+      "서울특별시 강남구 역삼동 605-17",
+      "강남헤븐리치더써밋761 1동 914호",
+      "월세 1,000 / 100 만원",
+      "손지연",
+      "본인",
+      "26.05.01",
+      "에이트공인중개사사무소",
+      "02-3453-7776"
+    ]
+  },
+  "payment": {
+    "method_used": "G포인트",
+    "amount_charged_points": 1900,
+    "points_before": 33250,
+    "points_after": 31350,
+    "coupon_available_at_inspection": 0,
+    "coupon_attempt_result": "쿠폰 없음 알림으로 차단됨",
+    "gpoint_transfer_result": "정상 차감 및 전송 완료"
+  },
+  "final_status": {
+    "list_total": 15,
+    "waiting_count_after_transfer": 1,
+    "checking_count_after_transfer": 1,
+    "failed_count_after_transfer": 0,
+    "advertising_count_after_transfer": 13,
+    "target_listing_status": "정보확인",
+    "transfer_completed": true
+  },
+  "created_files": {
+    "scripts": [
+      "inspect-gongsil-flow.js",
+      "inspect-ended-relist.js",
+      "dry-run-relist-submit.js",
+      "inspect-send-flow.js",
+      "perform-send-step1.js",
+      "inspect-confirm-popup.js",
+      "perform-final-send.js",
+      "inspect-after-image-save-frame.js",
+      "capture-v1-confirm-image.js",
+      "inspect-gpoint-popup.js"
+    ],
+    "important_outputs": [
+      "inspection-output/send-flow/confirm-image-preview.png",
+      "inspection-output/send-flow/confirm-signature-input.png",
+      "inspection-output/send-flow/final-send-gpoint.txt",
+      "inspection-output/send-flow/gpoint-popup.json",
+      "inspection-output/send-flow/12-after-final-send.png"
+    ],
+    "summary_file": "gongsilclub-automation-summary.json"
+  },
+  "automation_flow_for_future_use": [
+    "로그인",
+    "등록리스트에서 대상 매물번호 확인",
+    "대상 매물 상세/전송 페이지 진입",
+    "홍보확인(V1) 선택",
+    "소유자명과 관계 입력",
+    "이미지 홍보확인서 팝업 열기",
+    "서명 canvas에 소유자명 입력",
+    "1차 저장으로 홍보확인서 미리보기 생성",
+    "미리보기 화면에서 다시 저장해 이미지 첨부 완료",
+    "필수 개인정보 제공 동의 체크",
+    "전송하기 클릭",
+    "결제 팝업에서 G포인트 선택",
+    "팝업 확인 버튼으로 최종 제출",
+    "등록리스트에서 네이버번호와 진행상황 확인"
+  ],
+  "known_caveats": [
+    "사이트 HTML이 일부 EUC-KR/UTF-8 출력 환경에서 깨져 보일 수 있어 자동화 스크립트에서는 한글 값을 유니코드 이스케이프 또는 DOM 값으로 처리하는 것이 안정적임",
+    "홍보확인서 이미지는 서명 팝업 저장 후 미리보기 페이지에서 한 번 더 저장해야 실제 첨부값이 생성됨",
+    "쿠폰이 없으면 쿠폰 방식 제출은 실패하므로 G포인트 선택 팝업의 chkFrm 흐름을 사용해야 함",
+    "전송 후 상태는 바로 광고중이 아니라 정보확인/확인중으로 표시될 수 있음"
+  ]
+}
