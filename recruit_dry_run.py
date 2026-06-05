@@ -4,13 +4,14 @@ import json
 import os
 import re
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 from urllib import request
 from urllib.parse import urljoin
 
-from playwright.sync_api import BrowserContext, Page, Route, TimeoutError, sync_playwright
+from playwright.sync_api import Browser, BrowserContext, Page, Playwright, Route, TimeoutError, sync_playwright
 
 
 BASE_URL = "https://www.gongsil.com"
@@ -33,6 +34,60 @@ def ensure_output_dir() -> Path:
 
 def getenv_optional(name: str) -> str:
     return os.getenv(name, "").strip()
+
+
+def launch_browser(playwright: Playwright, headless: bool) -> Tuple[Browser, str]:
+    common_args = [
+        "--disable-crashpad-for-testing",
+        "--disable-breakpad",
+        "--disable-dev-shm-usage",
+        "--no-default-browser-check",
+        "--no-first-run",
+    ]
+    user_data_root = Path(tempfile.mkdtemp(prefix="gongsil-browser-", dir="/tmp"))
+    attempts = [
+        (
+            "bundled-chromium",
+            dict(
+                headless=headless,
+                chromium_sandbox=False,
+                args=common_args,
+                env={
+                    **os.environ,
+                    "HOME": str(user_data_root),
+                    "XDG_CONFIG_HOME": str(user_data_root / "config"),
+                    "XDG_CACHE_HOME": str(user_data_root / "cache"),
+                },
+            ),
+        ),
+        (
+            "chrome-channel",
+            dict(
+                channel="chrome",
+                headless=headless,
+                chromium_sandbox=False,
+                args=common_args,
+                env={
+                    **os.environ,
+                    "HOME": str(user_data_root),
+                    "XDG_CONFIG_HOME": str(user_data_root / "config"),
+                    "XDG_CACHE_HOME": str(user_data_root / "cache"),
+                },
+            ),
+        ),
+    ]
+
+    last_error = None
+    for label, kwargs in attempts:
+        try:
+            browser = playwright.chromium.launch(**kwargs)
+            print(f"[step] browser launched via {label}")
+            return browser, label
+        except Exception as exc:
+            last_error = exc
+            print(f"[warn] browser launch failed via {label}: {type(exc).__name__}: {exc}")
+
+    raise RuntimeError(f"All browser launch attempts failed: {last_error}")
 
 
 def install_submit_guard(context: BrowserContext, allow_insert: bool = False) -> None:
@@ -221,6 +276,37 @@ def summarize_content(html: str) -> Dict[str, Any]:
     }
 
 
+def apply_recruit_copy_updates(data: Dict[str, Any]) -> Dict[str, Any]:
+    data["source_title"] = data["title"]
+    data["source_job"] = data["job"]
+    data["source_content_sha256"] = hashlib.sha256(data["content_html"].encode("utf-8")).hexdigest()
+
+    data["title"] = "오피스텔·주택·상가 담당 직원을 찾습니다"
+    data["job"] = "오피스텔, 하이앤드 주택, 상가"
+
+    content = data["content_html"]
+    content = re.sub(
+        r"강남구\s*오피스텔[·ㆍ,\s&nbsp;]+하이앤드\s*주거용\s*부동산\s*중개를\s*함께할\s*팀원을\s*모집합니다\.",
+        "강남구 오피스텔, 하이앤드 주거용 부동산, 상가 중개를 함께할 팀원을 모집합니다.",
+        content,
+    )
+    content = content.replace(
+        "오피스텔, 주택 등 주거용 부동산 중개",
+        "오피스텔, 하이앤드 주택, 상가 중개",
+    )
+    if "오피스텔, 주택, 상가 등 다양한 분야를 경험하고 싶은 분" not in content:
+        content = content.replace(
+            '<li><font size="3">강남 핵심 상권에서 안정적으로 근무하고 싶은 분</font></li>',
+            '<li><font size="3">강남 핵심 상권에서 안정적으로 근무하고 싶은 분</font></li>'
+            '<li><font size="3"><br></font></li>'
+            '<li><font size="3">오피스텔, 주택, 상가 등 다양한 분야를 경험하고 싶은 분</font></li>',
+        )
+    data["content_html"] = content
+    data.update(summarize_content(data["content_html"]))
+    data["copy_updates_applied"] = True
+    return data
+
+
 def extract_form_data(page: Page, edit_url: str) -> Dict[str, Any]:
     print("[step] open edit form")
     page.goto(edit_url, wait_until="domcontentloaded")
@@ -262,11 +348,15 @@ def extract_form_data(page: Page, edit_url: str) -> Dict[str, Any]:
         else:
             data[field] = ""
 
-    content_summary = summarize_content(data["content_html"])
-    data.update(content_summary)
+    data.update(summarize_content(data["content_html"]))
     print(
         "[check] fetched latest source content "
-        f"(len={content_summary['content_length']}, sha256={content_summary['content_sha256'][:12]}...)"
+        f"(len={data['content_length']}, sha256={data['content_sha256'][:12]}...)"
+    )
+    data = apply_recruit_copy_updates(data)
+    print(
+        "[check] applied copy updates "
+        f"(title={data['title']}, len={data['content_length']}, sha256={data['content_sha256'][:12]}...)"
     )
 
     return data
@@ -472,7 +562,7 @@ def main() -> int:
         print("[start] dry-run only. submit/delete requests are blocked.")
 
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(headless=headless)
+        browser, browser_launcher = launch_browser(playwright, headless=headless)
         context = browser.new_context(locale="ko-KR")
         install_submit_guard(context, allow_insert=publish)
 
@@ -491,6 +581,7 @@ def main() -> int:
             result = {
                 "mode": "publish" if publish else "dry-run",
                 "fetched_at_utc": datetime.now(timezone.utc).isoformat(),
+                "browser_launcher": browser_launcher,
                 "source_content_checked_each_run": True,
                 "my_posts_url": my_posts_url,
                 "top_post": top_post,
